@@ -1,10 +1,13 @@
 package com.dierlisson.kanbantaskapp.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -20,7 +23,7 @@ import com.dierlisson.kanbantaskapp.model.Task
 import com.dierlisson.kanbantaskapp.ui.components.AddTaskSheet
 import com.dierlisson.kanbantaskapp.ui.components.TaskCard
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun KanbanBoardScreen(
     tasks: List<Task>,
@@ -31,8 +34,10 @@ fun KanbanBoardScreen(
     var showAddSheet by remember { mutableStateOf(false) }
     val columns = listOf("TODO" to "A Fazer", "DOING" to "Fazendo", "DONE" to "Concluído")
 
+    val pagerState = rememberPagerState(pageCount = { columns.size })
+
     Scaffold(
-        containerColor = Color(0xFFF8F9FA), // Cor de fundo clara do app
+        containerColor = Color(0xFFF8F9FA),
         topBar = {
             TopAppBar(
                 title = { Text("KanbanTask", fontWeight = FontWeight.Bold) },
@@ -42,7 +47,7 @@ fun KanbanBoardScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddSheet = true },
-                containerColor = Color(0xFF4285F4), // Azul do mockup
+                containerColor = Color(0xFF4285F4),
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -51,15 +56,23 @@ fun KanbanBoardScreen(
         }
     ) { paddingValues ->
 
-        // LazyRow garante o scroll horizontal para os lados
-        LazyRow(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(columns) { (status, title) ->
+            HorizontalPager(
+                state = pagerState,
+                contentPadding = PaddingValues(horizontal = 32.dp),
+                pageSpacing = 16.dp,
+                // --- MUDANÇA AQUI: Alinhando o conteúdo ao topo ---
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 16.dp) // Adiciona um respiro acima das colunas
+            ) { page ->
+                val (status, title) = columns[page]
+
                 KanbanColumn(
                     title = title,
                     tasks = tasks.filter { it.status == status },
@@ -67,9 +80,32 @@ fun KanbanBoardScreen(
                     onDeleteTask = onDeleteTask
                 )
             }
+
+            // Indicadores de Página
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(columns.size) { iteration ->
+                    val isCurrentPage = pagerState.currentPage == iteration
+                    val color = if (isCurrentPage) Color(0xFF4285F4) else Color.LightGray
+                    val size = if (isCurrentPage) 10.dp else 6.dp
+
+                    Box(
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .size(size)
+                    )
+                }
+            }
         }
 
-        // Exibe o BottomSheet se a variável de estado for true
         if (showAddSheet) {
             AddTaskSheet(
                 onDismiss = { showAddSheet = false },
@@ -90,10 +126,11 @@ fun KanbanColumn(
 ) {
     Column(
         modifier = Modifier
-            .width(280.dp)
-            .fillMaxHeight()
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .heightIn(max = 650.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFE9ECEF)) // Fundo cinza claro da coluna
+            .background(Color(0xFFE9ECEF))
             .padding(12.dp)
     ) {
         Row(
@@ -107,15 +144,13 @@ fun KanbanColumn(
                 color = Color(0xFF495057)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            // Badge com a quantidade de tarefas na coluna
             Badge(containerColor = Color.LightGray) {
                 Text(text = tasks.size.toString(), color = Color.DarkGray)
             }
         }
 
-        // LazyColumn para scroll vertical DENTRO da coluna
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.weight(1f, fill = false)
         ) {
             items(tasks) { task ->
                 TaskCard(task, onTaskClick, onDeleteTask)
