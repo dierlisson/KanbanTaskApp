@@ -23,24 +23,31 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // Instancia o ViewModel que gerencia a comunicação com a API
                     val viewModel: TaskViewModel = viewModel()
+
+                    // Observa as mudanças na lista de tarefas em tempo real
                     val tasks by viewModel.tasks.collectAsState()
 
                     KanbanBoardScreen(
                         tasks = tasks,
                         onAddTask = { title, desc, status ->
+                            // Chama a API para criar a tarefa
                             viewModel.addTask(title, desc, status)
                         },
                         onTaskClick = { task ->
-
+                            // Regra de negócio: Clicar no card avança o status da tarefa
                             val nextStatus = when (task.status) {
                                 "TODO" -> "DOING"
                                 "DOING" -> "DONE"
-                                else -> "TODO"
+                                else -> "DONE" // Se já está concluído, mantém
                             }
-                            viewModel.updateTaskStatus(task, nextStatus)
+                            if (task.status != nextStatus) {
+                                viewModel.updateTaskStatus(task, nextStatus)
+                            }
                         },
                         onDeleteTask = { task ->
+                            // Chama a API para deletar a tarefa
                             viewModel.deleteTask(task.id)
                         }
                     )

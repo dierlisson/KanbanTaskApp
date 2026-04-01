@@ -21,14 +21,20 @@ class TaskViewModel : ViewModel() {
     fun fetchTasks() {
         viewModelScope.launch {
             try {
-                _tasks.value = api.getTasks()
+                val response = api.getTasks()
+                println("API_DEBUG: Tarefas recebidas: ${response.size}")
+
+                if (response.isNotEmpty()) {
+                    println("API_DEBUG: Conteúdo da primeira tarefa: ${response[0]}")
+                }
+
+                _tasks.value = response
             } catch (e: Exception) {
-                // Em um app real, trataríamos o erro (ex: mostrar Snackbar)
+                println("API_DEBUG: Erro ao buscar: ${e.message}")
                 e.printStackTrace()
             }
         }
     }
-
     fun addTask(title: String, description: String, status: String = "TODO") {
         viewModelScope.launch {
             try {
