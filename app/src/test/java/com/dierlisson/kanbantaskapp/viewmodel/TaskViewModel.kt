@@ -78,4 +78,27 @@ class TaskViewModelTest {
         coVerify(exactly = 1) { mockApi.createTask(any()) }
         coVerify(exactly = 2) { mockApi.getTasks() } // Uma no init, outra após o add
     }
+
+    @Test
+    fun `ao atualizar tarefa, deve chamar a API e recarregar a lista`() = runTest {
+        // Arrange
+        val existingTask = Task("1", "Tarefa Antiga", "Desc", "TODO")
+        val updatedTask = existingTask.copy(title = "Tarefa Nova", description = "Nova Desc", status = "DOING")
+
+        coEvery { mockApi.getTasks() } returns emptyList()
+        coEvery { mockApi.updateTask(any(), any()) } returns updatedTask
+
+        viewModel = TaskViewModel()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Act
+        viewModel.updateTaskDetails(existingTask, "Tarefa Nova", "Nova Desc", "DOING")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Assert
+        // Verifica se a API de update foi chamada com os dados corretos
+        coVerify(exactly = 1) { mockApi.updateTask("1", updatedTask) }
+        // Verifica se a lista foi recarregada
+        coVerify(exactly = 2) { mockApi.getTasks() }
+    }
 }

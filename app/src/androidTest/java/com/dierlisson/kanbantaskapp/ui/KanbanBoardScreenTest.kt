@@ -87,8 +87,8 @@ class KanbanBoardScreenTest {
         composeTestRule.onNodeWithText("Editar Tarefa").assertIsDisplayed()
         composeTestRule.onNodeWithText("Atualizar Tarefa").assertIsDisplayed()
 
-        // Verifica se os campos foram preenchidos com os dados da tarefa
-        composeTestRule.onNodeWithText("Tarefa a Editar").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Descrição Antiga").assertIsDisplayed()
+        // Como o card continua no fundo e o form abriu por cima, esperamos encontrar 2 elementos com o mesmo texto
+        composeTestRule.onAllNodesWithText("Tarefa a Editar").assertCountEquals(2)
+        composeTestRule.onAllNodesWithText("Descrição Antiga").assertCountEquals(2)
     }
 }
