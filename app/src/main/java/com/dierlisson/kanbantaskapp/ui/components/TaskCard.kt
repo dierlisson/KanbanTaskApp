@@ -14,11 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dierlisson.kanbantaskapp.model.Task
+import androidx.compose.material.icons.outlined.Edit
 
 @Composable
 fun TaskCard(
     task: Task,
     onTaskClick: (Task) -> Unit,
+    onEditClick: (Task) -> Unit,
     onDeleteClick: (Task) -> Unit
 ) {
     ElevatedCard(
@@ -53,22 +55,35 @@ fun TaskCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Mock visual da prioridade (como na imagem)
                 Text(
                     text = "🔥 Média",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
-
-                IconButton(
-                    onClick = { onDeleteClick(task) },
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Delete,
-                        contentDescription = "Excluir Tarefa",
-                        tint = Color.Gray
-                    )
+                Row {
+                    // Botão de Editar
+                    IconButton(
+                        onClick = { onEditClick(task) },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Edit,
+                            contentDescription = "Editar Tarefa",
+                            tint = Color.Gray
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    // Botão de Excluir
+                    IconButton(
+                        onClick = { onDeleteClick(task) },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Delete,
+                            contentDescription = "Excluir Tarefa",
+                            tint = Color.Gray
+                        )
+                    }
                 }
             }
         }

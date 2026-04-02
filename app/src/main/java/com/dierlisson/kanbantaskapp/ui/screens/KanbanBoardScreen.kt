@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.dierlisson.kanbantaskapp.model.Task
-import com.dierlisson.kanbantaskapp.ui.components.AddTaskSheet
+import com.dierlisson.kanbantaskapp.ui.components.TaskFormSheet
 import com.dierlisson.kanbantaskapp.ui.components.TaskCard
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -28,9 +28,13 @@ import com.dierlisson.kanbantaskapp.ui.components.TaskCard
 fun KanbanBoardScreen(
     tasks: List<Task>,
     onAddTask: (String, String, String) -> Unit,
+    onEditTask: (Task, String, String, String) -> Unit, // <--- Nova função de edição
     onTaskClick: (Task) -> Unit,
     onDeleteTask: (Task) -> Unit
 ) {
+    // Gerencia se o form está aberto e qual tarefa está sendo editada (se for nulo, é criação)
+    var showFormSheet by remember { mutableStateOf(false) }
+    var taskToEdit by remember { mutableStateOf<Task?>(null) }
     var showAddSheet by remember { mutableStateOf(false) }
     val columns = listOf("TODO" to "A Fazer", "DOING" to "Fazendo", "DONE" to "Concluído")
 
@@ -46,7 +50,7 @@ fun KanbanBoardScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddSheet = true },
+                onClick = { taskToEdit = null; showFormSheet = true },
                 containerColor = Color(0xFF4285F4),
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
@@ -77,6 +81,10 @@ fun KanbanBoardScreen(
                     title = title,
                     tasks = tasks.filter { it.status == status },
                     onTaskClick = onTaskClick,
+                    onEditClick = { task ->
+                        taskToEdit = task
+                        showFormSheet = true
+                    },
                     onDeleteTask = onDeleteTask
                 )
             }
@@ -106,11 +114,19 @@ fun KanbanBoardScreen(
             }
         }
 
-        if (showAddSheet) {
-            AddTaskSheet(
-                onDismiss = { showAddSheet = false },
+        if (showFormSheet) {
+            TaskFormSheet(
+                taskToEdit = taskToEdit,
+                onDismiss = {
+                    showFormSheet = false
+                    taskToEdit = null
+                },
                 onSaveTask = { title, desc, status ->
-                    onAddTask(title, desc, status)
+                    if (taskToEdit != null) {
+                        onEditTask(taskToEdit!!, title, desc, status)
+                    } else {
+                        onAddTask(title, desc, status)
+                    }
                 }
             )
         }
@@ -122,6 +138,7 @@ fun KanbanColumn(
     title: String,
     tasks: List<Task>,
     onTaskClick: (Task) -> Unit,
+    onEditClick: (Task) -> Unit,
     onDeleteTask: (Task) -> Unit
 ) {
     Column(
@@ -153,7 +170,7 @@ fun KanbanColumn(
             modifier = Modifier.weight(1f, fill = false)
         ) {
             items(tasks) { task ->
-                TaskCard(task, onTaskClick, onDeleteTask)
+                TaskCard(task, onTaskClick, onEditClick, onDeleteTask)
             }
         }
     }

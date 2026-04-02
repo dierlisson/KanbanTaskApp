@@ -32,22 +32,22 @@ class MainActivity : ComponentActivity() {
                     KanbanBoardScreen(
                         tasks = tasks,
                         onAddTask = { title, desc, status ->
-                            // Chama a API para criar a tarefa
                             viewModel.addTask(title, desc, status)
                         },
+                        onEditTask = { task, newTitle, newDesc, newStatus ->
+                            viewModel.updateTaskDetails(task, newTitle, newDesc, newStatus)
+                        },
                         onTaskClick = { task ->
-                            // Regra de negócio: Clicar no card avança o status da tarefa
                             val nextStatus = when (task.status) {
                                 "TODO" -> "DOING"
                                 "DOING" -> "DONE"
-                                else -> "DONE" // Se já está concluído, mantém
+                                else -> "DONE"
                             }
                             if (task.status != nextStatus) {
                                 viewModel.updateTaskStatus(task, nextStatus)
                             }
                         },
                         onDeleteTask = { task ->
-                            // Chama a API para deletar a tarefa
                             viewModel.deleteTask(task.id)
                         }
                     )

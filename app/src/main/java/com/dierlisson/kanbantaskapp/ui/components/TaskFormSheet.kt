@@ -8,20 +8,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.dierlisson.kanbantaskapp.model.Task
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTaskSheet(
+fun TaskFormSheet(
+    taskToEdit: Task? = null, // Se for nulo, é criação. Se tiver dados, é edição.
     onDismiss: () -> Unit,
     onSaveTask: (title: String, description: String, status: String) -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    // Preenche os estados iniciais com os dados da tarefa (se houver)
+    var title by remember { mutableStateOf(taskToEdit?.title ?: "") }
+    var description by remember { mutableStateOf(taskToEdit?.description ?: "") }
+    var selectedStatus by remember { mutableStateOf(taskToEdit?.status ?: "TODO") }
 
-    // Status por padrão é TODO (A Fazer)
-    var selectedStatus by remember { mutableStateOf("TODO") }
     val statusOptions = listOf("TODO" to "A Fazer", "DOING" to "Fazendo", "DONE" to "Concluído")
     var expanded by remember { mutableStateOf(false) }
+
+    val isEditing = taskToEdit != null
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -32,10 +36,10 @@ fun AddTaskSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 16.dp)
-                .padding(bottom = 32.dp) // Espaço para não ficar colado embaixo
+                .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "Nova Tarefa",
+                text = if (isEditing) "Editar Tarefa" else "Nova Tarefa",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -60,7 +64,6 @@ fun AddTaskSheet(
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Dropdown de Coluna (Status)
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -106,9 +109,9 @@ fun AddTaskSheet(
                             onDismiss()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D6EFD)) // Azul estilo mockup
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D6EFD))
                 ) {
-                    Text("Salvar Tarefa")
+                    Text(if (isEditing) "Atualizar Tarefa" else "Salvar Tarefa")
                 }
             }
         }

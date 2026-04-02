@@ -59,6 +59,23 @@ class TaskViewModel : ViewModel() {
         }
     }
 
+    fun updateTaskDetails(task: Task, newTitle: String, newDescription: String, newStatus: String) {
+        viewModelScope.launch {
+            try {
+                // Cria uma cópia da tarefa mantendo o ID, mas com os novos valores
+                val updatedTask = task.copy(
+                    title = newTitle,
+                    description = newDescription,
+                    status = newStatus
+                )
+                api.updateTask(task.id, updatedTask)
+                fetchTasks()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun deleteTask(taskId: String) {
         viewModelScope.launch {
             try {
