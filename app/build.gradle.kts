@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.ui.test.junit4)
+    implementation("androidx.core:core-splashscreen:1.0.1")
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.androidx.core.testing)
