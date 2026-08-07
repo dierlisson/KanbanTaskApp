@@ -1,104 +1,271 @@
-# 📋 KanbanTask App
+# 📋 KanbanTaskApp
 
-Um aplicativo Android moderno e responsivo para gerenciamento de tarefas baseado na metodologia Kanban. Desenvolvido para demonstrar o uso prático de arquiteturas modernas, interfaces declarativas e testes automatizados no ecossistema Android.
+Aplicativo Android para gerenciamento de tarefas em um quadro Kanban, desenvolvido com Kotlin, Jetpack Compose, MVVM e integração com API REST.
 
-## 🚀 Sobre o Projeto
+## 🚀 Sobre o projeto
 
-O **KanbanTask** permite aos usuários organizar suas demandas diárias em três colunas clássicas: *A Fazer*, *Fazendo* e *Concluído*. O aplicativo consome uma API RESTful para persistência dos dados em nuvem e utiliza um visual limpo baseado no Material Design 3. 
+O **KanbanTaskApp** permite organizar tarefas em três etapas de um fluxo Kanban:
 
-A navegação entre as colunas foi projetada para oferecer uma experiência fluida através de um carrossel horizontal, mantendo o foco na coluna ativa e permitindo a rápida adição ou edição de tarefas através de modais interativos (Bottom Sheets).
+* **A Fazer**
+* **Fazendo**
+* **Concluído**
+
+As tarefas são persistidas em uma API REST e podem ser cadastradas, editadas, excluídas e movimentadas entre os diferentes status.
+
+A interface foi construída com Jetpack Compose e utiliza um carrossel horizontal para navegar entre as colunas. Os formulários de criação e edição são apresentados em Bottom Sheets, mantendo o usuário no contexto do quadro.
+
+---
+
+## 🎥 Demonstração
+
+O vídeo apresenta:
+
+* abertura do aplicativo com Splash Screen;
+* navegação entre as colunas do quadro;
+* criação de tarefas;
+* edição de tarefas existentes;
+* alteração do status;
+* persistência dos dados por meio da API REST.
+
+<video src="https://github.com/user-attachments/assets/8c0cce8f-963b-44fd-aee6-7ff32548c657" controls="controls" style="max-width: 100%; height: auto;">
+  Seu navegador não suporta a reprodução do vídeo.
+</video>
+
+---
 
 ## ✨ Funcionalidades
 
-* **Visualização Kanban:** Navegação por páginas horizontais (Carrossel) simulando quadros do Trello/Jira.
-* **CRUD Completo:** Adição, edição, listagem e exclusão de tarefas persistidas em nuvem.
-* **Progressão Rápida:** Mudança de status da tarefa (TODO -> DOING -> DONE) com apenas um toque no cartão.
-* **Interface Dinâmica:** Cartões com altura dinâmica e colunas alinhadas no topo para melhor aproveitamento de tela.
-* **Splash Screen Integrada:** Animação de entrada nativa do Android 12+ utilizando a biblioteca `core-splashscreen`.
-* **Ícone Adaptativo:** Design de ícone que se adapta aos padrões do sistema operacional do usuário.
-
-## 🛠 Tecnologias Utilizadas
-
-O projeto foi construído utilizando o que há de mais moderno no desenvolvimento nativo Android:
-
-* **Kotlin:** Linguagem principal do projeto.
-* **Jetpack Compose:** Toolkit moderno e declarativo para construção da UI.
-    * `HorizontalPager` para o efeito de carrossel.
-    * `ModalBottomSheet` para formulários sobrepostos.
-* **Arquitetura MVVM (Model-View-ViewModel):** Separação clara de responsabilidades entre a lógica de negócios e a interface.
-* **Coroutines & StateFlow:** Gerenciamento de tarefas assíncronas e reatividade baseada em estados.
-* **Retrofit & Gson:** Cliente HTTP para comunicação com a API RESTful e conversão de JSON.
-* **MockAPI.io:** Backend as a Service utilizado para gerar os endpoints REST.
-* **Testes:**
-    * **JUnit4 & MockK:** Testes unitários focados nas regras de negócio e chamadas de API do ViewModel.
-    * **Compose UI Testing:** Testes instrumentados (UI) para simular interações do usuário e validar a renderização condicional da interface.
+* **Quadro Kanban:** organização das tarefas nas colunas A Fazer, Fazendo e Concluído.
+* **CRUD de tarefas:** criação, consulta, edição e exclusão de tarefas.
+* **Alteração de status:** movimentação das tarefas entre os diferentes estágios do fluxo.
+* **Persistência remota:** armazenamento e recuperação das tarefas por meio de uma API REST.
+* **Navegação horizontal:** utilização de `HorizontalPager` para alternar entre as colunas.
+* **Formulários em Bottom Sheets:** criação e edição de tarefas sem sair da tela principal.
+* **Interface reativa:** atualização da tela a partir dos estados observados pelo ViewModel.
+* **Splash Screen:** tela de abertura utilizando a biblioteca `core-splashscreen`.
+* **Ícone adaptativo:** ícone compatível com os diferentes formatos adotados pelo Android.
 
 ---
 
-## 🧠 Desafios Superados e Aprendizados
+## 🏗️ Arquitetura
 
-Durante o desenvolvimento deste aplicativo, diversos desafios técnicos foram encontrados e resolvidos, proporcionando um grande aprofundamento no framework do Android:
+O projeto utiliza o padrão de apresentação **MVVM — Model-View-ViewModel**.
 
-### 1. Gestão de Estado e Navegação com Pager
-**Desafio:** Substituir listas simples (`LazyRow`) por um `HorizontalPager` para criar um efeito de carrossel imersivo, mantendo o alinhamento das colunas no topo e calculando a altura dinamicamente (`wrapContentHeight`).
-**Aprendizado:** Aprofundamento no sistema de layout do Jetpack Compose, entendendo o comportamento de modificadores complexos e como o Pager lida com reciclagem de views em comparação com as listas tradicionais.
+### Model
 
-### 2. Sincronização Estrita de Tipos de Dados da API
-**Desafio:** Após conectar o Retrofit, a conexão funcionava (status 200), mas os dados não apareciam na tela.
-**Solução e Aprendizado:** Identifiquei que geradores automáticos de mock inseriram strings aleatórias (ex: "status 1") no campo `status`. Como a UI do Compose filtrou os estados usando validação estrita ("TODO", "DOING", "DONE"), os dados não renderizavam. Isso reforçou a importância do mapeamento preciso (Schema) entre os DTOs do backend e as entidades do frontend, além do uso eficaz do **Logcat** para interceptar e analisar os payloads que chegam da API.
+Representa os dados das tarefas recebidos e enviados para a API.
 
-### 3. Conflitos de Resolução de Dependências do Gradle
-**Desafio:** Ao rodar os testes instrumentados de UI, o Gradle falhou com um erro crítico apontando que o Compose UI Testing exigia estritamente (`strictly`) o `espresso-core:3.5.0`, entrando em conflito com outras bibliotecas do projeto.
-**Solução e Aprendizado:** A resolução de dependências no Gradle requer atenção às "Bills of Materials" (BOMs). Compreendi como forçar versões específicas de bibliotecas no arquivo `build.gradle.kts` para garantir que o ambiente de testes do Compose não conflitasse com o core do Android.
+Cada tarefa possui informações como:
 
-### 4. Ambiguidade de Nós (Nodes) no Compose Testing
-**Desafio:** O teste instrumentado do formulário de edição falhou com o erro `Expected at most 1 node but found 2 nodes`. O Compose Testing encontrou a string "Tarefa a Editar" tanto no formulário (Bottom Sheet) quanto no cartão que ficou em segundo plano.
-**Solução e Aprendizado:** Entendimento de como o Jetpack Compose monta a sua Árvore Semântica. Aprendi a utilizar a função `onAllNodesWithText(texto).assertCountEquals(2)` para lidar com elementos sobrepostos na mesma tela, garantindo que o teste compreenda que a view de fundo ainda existe na hierarquia, mesmo esmaecida.
+* identificador;
+* título;
+* descrição;
+* status.
 
-### 5. Configuração Correta do Ambiente de Testes
-**Desafio:** Erros de `NullPointerException` (como `Build.FINGERPRINT is null`) ao tentar rodar os testes de UI do Compose.
-**Aprendizado:** Diferenciação clara entre o ambiente da JVM (Testes Unitários locais, que rodam no computador e exigem mocks como o *MockK*) e o ambiente Instrumentado (Testes de UI, que exigem um emulador/dispositivo real com o sistema Android para acessar recursos gráficos e de acessibilidade).
+### ViewModel
+
+O `TaskViewModel` concentra as operações relacionadas às tarefas:
+
+* carregar tarefas;
+* criar uma tarefa;
+* editar título e descrição;
+* alterar o status;
+* excluir uma tarefa.
+
+As operações assíncronas são executadas com Kotlin Coroutines, enquanto a lista de tarefas é disponibilizada para a interface por meio de `StateFlow`.
+
+### View
+
+A interface foi desenvolvida com Jetpack Compose e observa os dados disponibilizados pelo ViewModel.
+
+Entre os componentes utilizados estão:
+
+* `HorizontalPager`;
+* `ModalBottomSheet`;
+* componentes do Material Design 3;
+* cartões de tarefas;
+* estados e componentes reutilizáveis.
 
 ---
-## 🎥 Demonstração do App
 
-Confira abaixo o KanbanTask em funcionamento. No vídeo, demonstramos o fluxo completo de uso e a responsividade da interface construída com Jetpack Compose:
+## 🛠️ Tecnologias utilizadas
 
-* **Splash Screen Integrada:** Abertura do app utilizando a API nativa do Android com o ícone adaptativo personalizado.
-* **Gestão Ágil:** Fluxo rápido e intuitivo para editar tarefas existentes e criar novas demandas utilizando o modal inferior (Bottom Sheet).
-* **Navegação Fluida:** Transição suave entre as colunas do quadro Kanban ("A Fazer", "Fazendo" e "Concluído") através do `HorizontalPager`.
-* **Persistência em Nuvem:** Ao final da demonstração, o aplicativo é fechado e reaberto, provando que o estado e os dados das tarefas são carregados com sucesso diretamente da API (Retrofit).
+| Tecnologia             | Aplicação no projeto                                        |
+| ---------------------- | ----------------------------------------------------------- |
+| **Kotlin**             | Linguagem principal do aplicativo.                          |
+| **Jetpack Compose**    | Construção declarativa das telas e componentes.             |
+| **Material Design 3**  | Componentes e padrões visuais da interface.                 |
+| **MVVM**               | Separação entre interface, estado e operações da aplicação. |
+| **StateFlow**          | Observação reativa da lista de tarefas.                     |
+| **Kotlin Coroutines**  | Execução das chamadas assíncronas à API.                    |
+| **Retrofit**           | Comunicação com os endpoints REST.                          |
+| **Gson**               | Conversão entre JSON e objetos Kotlin.                      |
+| **MockAPI.io**         | Backend utilizado para persistir as tarefas do projeto.     |
+| **HorizontalPager**    | Navegação horizontal entre as colunas Kanban.               |
+| **JUnit 4**            | Execução dos testes unitários.                              |
+| **MockK**              | Criação de mocks nos testes unitários.                      |
+| **Compose UI Testing** | Testes instrumentados da interface.                         |
+| **Gradle**             | Build e gerenciamento das dependências.                     |
 
-<video src="https://github.com/user-attachments/assets/8c0cce8f-963b-44fd-aee6-7ff32548c657" controls="controls" style="max-width: 100%; height: auto;">
-  Seu navegador não suporta a tag de vídeo.
-</video>
 ---
 
-## 💻 Como Executar o Projeto
+## 🧠 Desafios superados e aprendizados
 
-1. Clone este repositório:
-   ```bash
-   git clone https://github.com/dierlisson/KanbanTaskApp.git
-   ```
-2. Abra o projeto no Android Studio (versão Iguana ou superior recomendada).
+### 1. Gestão de estado e navegação com HorizontalPager
 
-3. Aguarde o Gradle sincronizar todas as dependências.
+**Desafio:** substituir uma lista horizontal simples por um `HorizontalPager`, mantendo as colunas alinhadas no topo e ajustando a altura dos componentes ao conteúdo.
 
-4. Conecte um dispositivo Android físico ou inicie o Emulador.
+**Solução:** reorganização da estrutura da interface e dos modificadores utilizados nos containers de cada página.
 
-5. Clique no botão de Run (Shift + F10).
+**Aprendizado:** compreensão mais aprofundada do sistema de layout do Jetpack Compose, do comportamento do Pager e das diferenças em relação a componentes como `LazyRow`.
 
-> **🔐 Nota sobre a API e Segurança:** O aplicativo está configurado para consumir um endpoint público do MockAPI.io. Caso queira usar seu próprio backend, altere a variável `BASE_URL` no arquivo `RetrofitClient.kt`. 
-> 
-> **Boas Práticas:** Em um aplicativo real de produção, a melhor prática seria ocultar essa URL base e quaisquer tokens de acesso no arquivo `local.properties` (injetando os valores através do `BuildConfig`), garantindo que dados sensíveis não subam para o repositório no GitHub. Como este projeto tem fins estritamente didáticos e de portfólio, e o objetivo principal foi consolidar a interface gráfica e a arquitetura MVVM, optei por manter a URL diretamente no código para facilitar a execução rápida e a avaliação.
+### 2. Sincronização dos status recebidos pela API
 
-🧪 Como Rodar os Testes
-Testes Unitários (ViewModel):
-Navegue até app/src/test/.../viewmodel/TaskViewModelTest.kt e clique no ícone de execução na margem esquerda da IDE.
+**Desafio:** a API respondia com sucesso, mas algumas tarefas não eram exibidas no quadro.
 
-Testes de UI (Jetpack Compose):
-Com o emulador aberto, navegue até app/src/androidTest/.../ui/KanbanBoardScreenTest.kt e clique no ícone de execução do Android.
+**Causa:** determinados registros possuíam valores de status diferentes dos esperados pela aplicação. A interface filtrava as tarefas utilizando os valores `TODO`, `DOING` e `DONE`.
+
+**Solução:** análise do payload recebido e correção dos valores cadastrados na API.
+
+**Aprendizado:** importância de manter um contrato consistente entre os dados do backend e os modelos utilizados pelo aplicativo, além do uso do Logcat para analisar respostas da API.
+
+### 3. Conflitos entre dependências de testes
+
+**Desafio:** os testes instrumentados apresentaram conflitos entre versões do Compose UI Testing e do Espresso.
+
+**Solução:** ajuste das versões utilizadas no Gradle e alinhamento das dependências de teste.
+
+**Aprendizado:** melhor compreensão sobre resolução de dependências, Compose BOM e compatibilidade entre bibliotecas do ambiente de testes Android.
+
+### 4. Elementos duplicados na árvore semântica
+
+**Desafio:** durante o teste do formulário de edição, o Compose Testing encontrou dois elementos com o mesmo texto: um no cartão da tarefa e outro no Bottom Sheet.
+
+O teste retornava o erro:
+
+```text
+Expected at most 1 node but found 2 nodes
+```
+
+**Solução:** utilização de uma consulta que considera todos os elementos encontrados:
+
+```kotlin
+onAllNodesWithText(texto).assertCountEquals(2)
+```
+
+**Aprendizado:** entendimento de que elementos visualmente sobrepostos podem continuar presentes na árvore semântica do Compose e precisam ser considerados durante os testes.
+
+### 5. Diferença entre testes locais e instrumentados
+
+**Desafio:** ocorreram erros ao tentar executar testes de interface no ambiente local da JVM, incluindo problemas relacionados a propriedades do sistema Android.
+
+**Solução:** separação correta dos ambientes de execução:
+
+* testes unitários executados localmente na JVM;
+* testes de interface executados em emulador ou dispositivo Android.
+
+**Aprendizado:** compreensão das responsabilidades e limitações de cada tipo de teste no desenvolvimento Android.
+
+---
+
+## 💻 Como executar
+
+### Pré-requisitos
+
+* Android Studio;
+* Android SDK configurado;
+* JDK compatível com o projeto;
+* emulador Android ou dispositivo físico;
+* conexão com a internet para baixar as dependências e acessar a API.
+
+O aplicativo possui suporte mínimo ao **Android 7.0 — API 24**.
+
+### Clonar o repositório
+
+```bash
+git clone https://github.com/dierlisson/KanbanTaskApp.git
+```
+
+Acesse a pasta do projeto:
+
+```bash
+cd KanbanTaskApp
+```
+
+Depois:
+
+1. Abra a pasta no Android Studio.
+2. Aguarde a sincronização do Gradle.
+3. Inicie um emulador ou conecte um dispositivo Android.
+4. Execute o aplicativo pelo botão **Run** do Android Studio.
+
+### Configuração da API
+
+O aplicativo está configurado para utilizar um endpoint público do MockAPI.io.
+
+Para utilizar outro backend, altere a propriedade `BASE_URL` no arquivo:
+
+```text
+app/src/main/java/com/dierlisson/kanbantaskapp/api/RetrofitClient.kt
+```
+
+A URL base não é, por si só, uma informação secreta. Entretanto, tokens, chaves de API ou outras credenciais não devem ser adicionados diretamente ao código ou enviados ao GitHub.
+
+Quando forem necessários, esses valores podem ser configurados por meio de `local.properties` e disponibilizados para o aplicativo utilizando o `BuildConfig`.
+
+---
+
+## 🧪 Como rodar os testes
+
+Os comandos devem ser executados na raiz do projeto.
+
+### Testes unitários
+
+No Windows:
+
+```bash
+gradlew.bat testDebugUnitTest
+```
+
+No macOS ou Linux:
+
+```bash
+./gradlew testDebugUnitTest
+```
+
+Os relatórios gerados podem ser encontrados em:
+
+```text
+app/build/reports/tests/testDebugUnitTest/index.html
+```
+
+### Testes instrumentados de interface
+
+Antes de executar, inicie um emulador ou conecte um dispositivo Android.
+
+No Windows:
+
+```bash
+gradlew.bat connectedDebugAndroidTest
+```
+
+No macOS ou Linux:
+
+```bash
+./gradlew connectedDebugAndroidTest
+```
+
+Os relatórios dos testes instrumentados podem ser encontrados em:
+
+```text
+app/build/reports/androidTests/connected/index.html
+```
+
+---
 
 ## 👤 Autor
 
-Desenvolvido por **Dierlisson Justiniano** como parte de um desafio prático de desenvolvimento Android.
+Desenvolvido por **Dierlisson Justiniano** como projeto de portfólio em desenvolvimento Android.
+
+* [LinkedIn](https://www.linkedin.com/in/dierlissonjustiniano/)
+* [GitHub](https://github.com/dierlisson)
